@@ -1,0 +1,9 @@
+# Node modules (all locations)
+node_modules/
+**/node_modules/
+
+# Env files
+.env
+
+# Temp folders
+temp_repo/
