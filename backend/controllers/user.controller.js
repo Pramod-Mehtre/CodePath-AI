@@ -51,15 +51,15 @@ exports.getStreakInfo = async (req, res, next) => {
 
       // if last solved is less than yesterday, it means they missed yesterday, so streak breaks unless they haven't set a goal yet or whatever.
       // But we just return 0 if they broke it. The actual saving of broken streak can happen safely.
-      if (lastSolved.getTime() < yesterday.getTime() && user.dailyGoal > 0) {
-        currentStreak = 1;
+      if (lastSolved.getTime() < yesterday.getTime()) {
+        currentStreak = 0;
       }
     }
 
     // Also fetch today's count to compute progress bar efficiently 
     const todayCount = await Problem.countDocuments({
       userId: user._id,
-      createdAt: { $gte: today }
+      date: { $gte: today }
     });
 
     res.status(200).json({

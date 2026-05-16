@@ -1,15 +1,23 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import API from "../services/api";
+import Logo from "./Logo";
 
 function Header() {
   const [isAuth, setIsAuth] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     API.get("/auth/me")
       .then(() => setIsAuth(true))
       .catch(() => setIsAuth(false));
+
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const handleLogout = async () => {
@@ -21,34 +29,36 @@ function Header() {
     }
   };
 
-  return (
-    <header className="saas-header">
-      <Link to="/" className="header-logo">
-        <span style={{ fontSize: "24px" }}>🚀</span> PrepTracker
-      </Link>
+  const navLinkClass = ({ isActive }) => `nav-link ${isActive ? "active" : ""}`;
 
-      <nav className="header-nav">
-        {isAuth && (
-          <>
-            <Link to="/" className="btn-ghost" style={{ padding: "8px" }}>Dashboard</Link>
-            <Link to="/skills" className="btn-ghost" style={{ padding: "8px" }}>Skills</Link>
-            <Link to="/jd-analyzer" className="btn-ghost" style={{ padding: "8px" }}>JD Analyzer</Link>
-            <Link to="/company-sheet" className="btn-ghost" style={{ padding: "8px" }}>Company Sheets</Link>
-            <Link to="/add" className="btn-ghost" style={{ padding: "8px" }}>Add Problem</Link>
-            <button onClick={handleLogout} className="btn-ghost" style={{ color: "var(--danger-hover)" }}>
+  return (
+    <header className={`saas-header ${scrolled ? 'scrolled' : ''}`}>
+      <div className="header-container">
+        <NavLink to="/" className="header-logo" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <Logo size={28} />
+          <span style={{ fontSize: "19px", fontWeight: "800", color: "#0f172a", letterSpacing: "-0.03em" }}>PrepTracker</span>
+        </NavLink>
+
+        <nav className="header-nav">
+          {isAuth ? (
+            <button onClick={handleLogout} className="btn-nav-login" style={{ color: "#ef4444" }}>
               Logout
             </button>
-          </>
-        )}
-        {!isAuth && (
-          <div className="flex gap-2 items-center">
-            <Link to="/login" className="btn-ghost">Log in</Link>
-            <Link to="/signup" className="btn-primary" style={{ padding: "8px 16px" }}>Sign Up</Link>
-          </div>
-        )}
-      </nav>
+          ) : (
+            <div className="auth-group">
+              <NavLink to="/login" className="btn-nav-login">
+                Log in
+              </NavLink>
+              <NavLink to="/signup" className="btn-nav-signup">
+                Sign Up
+              </NavLink>
+            </div>
+          )}
+        </nav>
+      </div>
     </header>
   );
 }
 
 export default Header;
+

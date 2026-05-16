@@ -17,6 +17,8 @@ function Dashboard() {
   const [goalInput, setGoalInput] = useState("");
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState({ title: "", topic: "", difficulty: "", platform: "" });
+  const [loading, setLoading] = useState(false);
+  const [aiInsights, setAiInsights] = useState(null);
 
   const navigate = useNavigate();
   const toast = useToast();
@@ -232,8 +234,56 @@ function Dashboard() {
             )}
           </div>
         </div>
+      </div>
 
-
+      <div className="saas-card mt-6" style={{ background: "linear-gradient(135deg, #eef2ff, #ffffff)" }}>
+        <div className="flex justify-between items-center mb-4">
+          <h3 style={{ fontSize: "18px", color: "#4f46e5" }}>🧠 AI Weakness Tracking</h3>
+          <button 
+            disabled={loading}
+            onClick={async () => {
+              try {
+                setLoading(true);
+                toast.info("Generating AI insights...");
+                const res = await API.get("/analytics/insights");
+                if (res.data.success) {
+                   toast.success("AI Insights updated");
+                   setAiInsights(res.data.data.aiAnalysis);
+                }
+              } catch(e) {
+                toast.error("Failed to load AI insights");
+              } finally {
+                setLoading(false);
+              }
+            }} 
+            className="btn-outline" 
+            style={{ fontSize: "13px", padding: "6px 12px" }}>
+            {loading ? "Analyzing..." : "Analyze Weaknesses"}
+          </button>
+        </div>
+        
+        {aiInsights ? (
+          <div style={{ marginTop: "15px", padding: "15px", background: "#ffffff", borderRadius: "10px", border: "1px solid var(--border-color)" }}>
+            <div style={{ marginBottom: "12px" }}>
+              <strong style={{ display: "block", marginBottom: "5px", color: "#4f46e5", fontSize: "14px" }}>Weak Areas:</strong>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+                {aiInsights.weaknesses?.map((w, i) => (
+                  <span key={i} style={{ background: "#fee2e2", color: "#991b1b", padding: "4px 10px", borderRadius: "12px", fontSize: "12px", fontWeight: "600" }}>
+                    {w}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <div>
+              <strong style={{ display: "block", marginBottom: "5px", color: "#4f46e5", fontSize: "14px" }}>Strategy:</strong>
+              <p style={{ color: "var(--text-muted)", fontSize: "14px", margin: 0 }}>{aiInsights.insights}</p>
+            </div>
+          </div>
+        ) : (
+          <p style={{ color: "var(--text-muted)", fontSize: "14px" }}>
+            Click to analyze your solved problems and find out where you need to focus.
+          </p>
+        )}
       </div>
 
       <div className="saas-card mt-6">

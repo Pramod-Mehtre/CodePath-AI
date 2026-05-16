@@ -14,24 +14,18 @@ exports.addProblem = async (req, res, next) => {
        return next(new AppError("Not authorized", 401));
     }
 
-    // CHECK IF DUPLICATE
-    const exists = await Problem.findOne({
-      userId: req.user.id,
-      title,
-      platform
-    });
-
-    if (exists) {
-      return next(new AppError("Problem already added", 400));
-    }
-
-    const problem = await Problem.create({
-      userId: req.user.id,
-      title,
-      topic,
-      difficulty,
-      platform,
-    });
+    const problem = await Problem.findOneAndUpdate(
+      { userId: req.user.id, title },
+      {
+        userId: req.user.id,
+        title,
+        topic,
+        difficulty,
+        platform,
+        date: new Date()
+      },
+      { upsert: true, new: true }
+    );
 
     // Check streak
     await exports.updateStreak(req.user.id);
@@ -83,7 +77,7 @@ exports.getProblems = async (req, res, next) => {
     if (!req.user || !req.user.id) {
        return next(new AppError("Not authorized", 401));
     }
-    const problems = await Problem.find({ userId: req.user.id });
+    const problems = await Problem.find({ userId: req.user.id }).sort({ date: -1 });
     res.json(problems);
   } catch (error) {
     next(error);

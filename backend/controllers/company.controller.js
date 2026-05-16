@@ -73,16 +73,18 @@ exports.solveProblem = async (req, res, next) => {
     await SolvedCompanyProblem.create({ userId, problemId, company: problemData.company });
 
     // Ensure it feeds natively into general dashboard / skills analyzer implicitly!
-    const existingGeneral = await Problem.findOne({ userId, title: problemData.title });
-    if (!existingGeneral) {
-      await Problem.create({
+    await Problem.findOneAndUpdate(
+      { userId, title: problemData.title },
+      {
         userId,
         title: problemData.title,
         topic: problemData.topic,
         difficulty: problemData.difficulty,
         platform: problemData.company + " Sheet",
-      });
-    }
+        date: new Date()
+      },
+      { upsert: true, new: true }
+    );
 
     // Call precisely decoupled streak update logic
     await updateStreak(userId);

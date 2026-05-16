@@ -16,6 +16,6 @@ const problemSchema = new mongoose.Schema({
 });
 
 // ✅ ADDED COMPOUND INDEX TO PREVENT DUPLICATES
-problemSchema.index({ userId: 1, title: 1, platform: 1 }, { unique: true });
+problemSchema.index({ userId: 1, title: 1 }, { unique: true });
 
 module.exports = mongoose.model("Problem", problemSchema);

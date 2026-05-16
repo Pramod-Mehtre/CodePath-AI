@@ -1,4 +1,8 @@
 const Problem = require("../models/problem.model");
+const User = require("../models/user.model");
+const CompanyProblem = require("../models/companyProblem.model");
+const SolvedCompanyProblem = require("../models/solvedCompanyProblem.model");
+const Activity = require("../models/activity.model");
 const AppError = require("../utils/AppError");
 
 exports.getDashboard = async (req, res, next) => {
@@ -9,7 +13,7 @@ exports.getDashboard = async (req, res, next) => {
 
     const userId = req.user.id;
 
-    const problems = await Problem.find({ userId });
+    const problems = await Problem.find({ userId }).sort({ date: -1 });
 
     // total
     const total = problems.length;
@@ -29,7 +33,7 @@ exports.getDashboard = async (req, res, next) => {
     });
 
     // recent problems
-    const recent = problems.slice(-5);
+    const recent = problems.slice(0, 5);
 
     // skills metrics
     let strongestTopic = "N/A";
@@ -50,6 +54,33 @@ exports.getDashboard = async (req, res, next) => {
         strongestTopic,
         weakestTopic
       }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.getPublicStats = async (req, res, next) => {
+  try {
+    const [
+      problemsTracked, 
+      activeUsers, 
+      roadmapsCreated,
+      resumeAnalyses,
+      mockInterviews
+    ] = await Promise.all([
+      Problem.countDocuments(),
+      User.countDocuments(),
+      Activity.countDocuments({ type: "roadmap" }),
+      Activity.countDocuments({ type: "resume_analysis" }),
+      Activity.countDocuments({ type: "mock_interview" })
+    ]);
+
+    res.status(200).json({
+      problemsTracked,
+      activeUsers,
+      roadmapsCreated,
+      analysesCompleted: resumeAnalyses + mockInterviews
     });
   } catch (error) {
     next(error);

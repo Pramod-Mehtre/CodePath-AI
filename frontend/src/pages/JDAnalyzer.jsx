@@ -156,6 +156,15 @@ const JDAnalyzer = () => {
                  <ul style={{ paddingLeft: "20px", color: "var(--text-muted)", fontSize: "14px", display: "flex", flexDirection: "column", gap: "8px" }}>
                     {result.suggestions.map((s, i) => <li key={i}>{s}</li>)}
                  </ul>
+                 
+                 <div style={{ display: "flex", gap: "10px", marginTop: "20px" }}>
+                   <button 
+                     onClick={() => navigate("/roadmap", { state: { ...result, autoGenerate: true } })} 
+                     className="btn-outline" 
+                     style={{ flex: 1 }}>
+                     🗺️ Gen Prep Roadmap
+                   </button>
+                 </div>
                </div>
 
                {result.recommendedCompany && (

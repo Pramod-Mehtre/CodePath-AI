@@ -5,6 +5,7 @@ const CompanyProblem = require("../models/companyProblem.model");
 const Skill = require("../models/skill.model");
 const PendingSkill = require("../models/pendingSkill.model");
 const AppError = require("../utils/AppError");
+const Activity = require("../models/activity.model");
 const { generateAIResponse } = require("../utils/aiService");
 
 // ────────────────────────────────────────────────────────────
@@ -166,16 +167,40 @@ exports.analyzeJD = async (req, res, next) => {
     if (!hasComplexity) jobFit -= 5;
     const finalJobFit = Math.max(0, Math.min(100, jobFit));
 
-    // ── 7. Dynamic Company Lookup ──
+    // ── 7. Dynamic Company Lookup (strict) ──
+    const VALID_COMPANIES = [
+      "Amazon", "Microsoft", "Google", "Cisco", "Swiggy",
+      "Infosys", "TCS", "Adobe", "Flipkart", "Walmart", "Goldman Sachs",
+      "Apple", "Meta", "Netflix"
+    ];
     let recommendedCompany = null;
-    const allCompanies = await CompanyProblem.distinct("company");
-    for (const c of allCompanies) {
-      if (jobDescription.toLowerCase().includes(c.toLowerCase())) {
-        recommendedCompany = c;
+    const normalizedJD = jobDescription.toLowerCase();
+    // Explicit detection using word boundaries
+    for (const company of VALID_COMPANIES) {
+      const escaped = company.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const regex = new RegExp(`\\b${escaped}\\b`, "i");
+      if (regex.test(normalizedJD)) {
+        recommendedCompany = company;
         break;
       }
     }
-    if (!recommendedCompany) recommendedCompany = jdSkills.includes("DSA") ? "Amazon" : "TCS";
+    // Fallback if none detected
+    if (!recommendedCompany) {
+      const isProductBased = /product|scalable|startup|saas/i.test(jobDescription);
+      const isServiceBased = /service|consulting|client/i.test(jobDescription);
+      if (isProductBased) recommendedCompany = "Amazon";
+      else if (isServiceBased) recommendedCompany = "TCS";
+      else recommendedCompany = jdSkills.includes("DSA") ? "Amazon" : "TCS";
+    }
+    // Debug logging
+    console.log("Detected Company:", recommendedCompany);
+    // Log any tech entities present in DB but not in VALID_COMPANIES
+    const allCompanies = await CompanyProblem.distinct("company");
+    for (const c of allCompanies) {
+      if (!VALID_COMPANIES.includes(c)) {
+        console.log("Rejected Tech Entity:", c);
+      }
+    }
 
     // ── 8. Logic-Driven Suggestions ──
     const suggestions = [];
@@ -212,6 +237,9 @@ exports.analyzeJD = async (req, res, next) => {
         strengths = parsed.strengths || strengths;
       } catch(e) {}
     }
+
+    // Log activity
+    await Activity.create({ type: "resume_analysis", userId: req.user?.id });
 
     res.json({
         success: true,

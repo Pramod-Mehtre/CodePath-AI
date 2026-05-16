@@ -16,7 +16,7 @@ app.use(cookieParser());
 
 app.use(
   cors({
-    origin: ["http://localhost:5173", "http://localhost:5174"],
+    origin: ["http://localhost:5173", "http://localhost:5174", "http://localhost:5175"],
     credentials: true, // ✅ allow cookies
   })
 );
@@ -36,7 +36,6 @@ app.use(
   })
 );
 
-// routes
 const authRoutes = require("./routes/auth.routes");
 const dsaRoutes = require("./routes/dsa.routes");
 const dashboardRoutes = require("./routes/dashboard.routes");
@@ -44,14 +43,25 @@ const skillRoutes = require("./routes/skill.routes");
 const userRoutes = require("./routes/user.routes");
 const jdRoutes = require("./routes/jd.routes");
 const companyRoutes = require("./routes/company.routes");
+const roadmapRoutes = require("./routes/roadmap.routes");
+const resumeRoutes = require("./routes/resume.routes");
+const mockInterviewRoutes = require("./routes/mockInterview.routes");
+const analyticsRoutes = require("./routes/analytics.routes");
+
+const publicRoutes = require("./routes/public.routes");
 
 app.use("/api/auth", authRoutes);
+app.use("/api/public", publicRoutes);
 app.use("/api/dsa", dsaRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/skills", skillRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/jd", jdRoutes);
 app.use("/api/company-problems", companyRoutes);
+app.use("/api/roadmap", roadmapRoutes);
+app.use("/api/resume", resumeRoutes);
+app.use("/api/mock-interview", mockInterviewRoutes);
+app.use("/api/analytics", analyticsRoutes);
 
 // error handler
 const errorHandler = require("./middleware/error.middleware");

@@ -6,6 +6,9 @@ import JDAnalyzer from "./pages/JDAnalyzer";
 import CompanySheet from "./pages/CompanySheet";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+import MockInterview from "./pages/MockInterview";
+import ResumeImprover from "./pages/ResumeImprover";
+import Roadmap from "./pages/Roadmap";
 import Layout from "./components/Layout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { ToastProvider } from "./context/ToastContext";
@@ -55,6 +58,30 @@ function AppWrapper() {
             element={
               <ProtectedRoute>
                 <CompanySheet />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/mock-interview" 
+            element={
+              <ProtectedRoute>
+                <MockInterview />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/resume-improver" 
+            element={
+              <ProtectedRoute>
+                <ResumeImprover />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/roadmap" 
+            element={
+              <ProtectedRoute>
+                <Roadmap />
               </ProtectedRoute>
             } 
           />
